@@ -72,37 +72,6 @@ static bool IsFollower(RE::Actor* actor)
     return actor->IsInFaction(fac);
 }
 
-static RE::BGSKeyword* g_kwDragon = nullptr;  // set at kDataLoaded
-
-static bool IsDragon(RE::Actor* actor)
-{
-    if (!actor) return false;
-    if (g_kwDragon) {
-        if (actor->HasKeyword(g_kwDragon)) return true;
-        auto* race = actor->GetRace();
-        if (race && race->HasKeyword(g_kwDragon)) return true;
-    }
-    auto* race = actor->GetRace();
-    if (race) {
-        const char* edid = race->GetFormEditorID();
-        if (edid && std::strstr(edid, "Dragon")) return true;
-    }
-    return false;
-}
-
-// Some mods run their own death scripts that completely purge the actor record
-// (FormID → 0, kDeleted) from a Papyrus thread concurrently with our game-thread
-// AddTask. Detect them at queue time and skip entirely.
-static bool HasModOwnedDeath(RE::Actor* actor)
-{
-    if (!actor) return false;
-    auto* base = actor->GetActorBase();
-    if (!base) return false;
-    auto* file = base->GetFile(0);
-    if (!file) return false;
-    return _stricmp(file->fileName, "SkyrimChainBeasts.esm") == 0;
-}
-
 static std::string ActorLabel(RE::TESObjectREFR* ref)
 {
     if (!ref) return "None(null)";
@@ -450,7 +419,6 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse)
 
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* msg) {
         if (msg->type == SKSE::MessagingInterface::kDataLoaded) {
-            g_kwDragon = RE::TESForm::LookupByID<RE::BGSKeyword>(0x000131F4); // ActorTypeDragon
             auto* src = RE::ScriptEventSourceHolder::GetSingleton();
             if (!src) {
                 CLog("ERROR: ScriptEventSourceHolder is null -- no events registered");
