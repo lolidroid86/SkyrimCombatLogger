@@ -1,0 +1,12 @@
+{
+    "name": "skyrim-combat-logger",
+    "version": "1.0.0",
+    "dependencies": [
+        "spdlog",
+        "fmt",
+        "robin-hood-hashing",
+        "simpleini",
+        "rapidcsv",
+        "xbyak"
+    ]
+}
